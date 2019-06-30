@@ -76,6 +76,11 @@ export AWSAccessKeyId=...
 export AWSSecretKey=...
 python server/app.py
 ```
+### Gunicorn
+```
+pip install gunicorn
+gunicorn --bind 0.0.0.0:5000 --workers=1 app:app
+```
 ### Testing rps
 ```
 time python multiple_sync_request_threaded.py -nr 1000 -nt 20
