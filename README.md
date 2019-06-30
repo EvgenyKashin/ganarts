@@ -71,5 +71,5 @@ https://medium.com/@rupak.thakur/aws-vs-paperspace-vs-floydhub-choosing-your-clo
 ## Server
 ### Running
 ```
-FLASK_APP=server/app.py flask run -p 8889
+python server/app.py
 ```
