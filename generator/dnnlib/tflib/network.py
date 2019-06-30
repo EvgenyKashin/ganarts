@@ -418,7 +418,8 @@ class Network:
 
                         assert len(in_gpu) == self.num_inputs
                         # import pdb;pdb.set_trace()
-                        # in_gpu = tf.transpose(in_gpu, [0, 3, 1, 2])
+                        if is_cpu:
+                            in_gpu = tf.transpose(in_gpu, [0, 3, 1, 2])
                         out_gpu = net_gpu.get_output_for(*in_gpu, return_as_list=True, **dynamic_kwargs)
 
                         if output_transform is not None:

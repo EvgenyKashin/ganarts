@@ -9,5 +9,7 @@ RUN pip install pillow==5.4.1 \
                 tqdm \
                 scipy
 
+RUN pip install jupyter
+
 RUN mkdir stylegan
 WORKDIR /stylegan
