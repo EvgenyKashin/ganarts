@@ -67,3 +67,9 @@ https://medium.com/@rupak.thakur/aws-vs-paperspace-vs-floydhub-choosing-your-clo
 
 ### S3
 - 60 * 24 * 9 = 12960 images (1 image in minute) - should be generated in a day
+
+## Server
+### Running
+```
+FLASK_APP=server/app.py flask run -p 8889
+```
