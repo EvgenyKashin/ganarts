@@ -1,29 +1,40 @@
 # Ganarts
+This T-shirt does not exist
 
 ## Generator 
 ### Docker
 #### GPU
+```
 sudo docker build -t digitman/tf_gan -f docker/generator/Dockerfile generator
 sudo docker run -it --rm -v `pwd`/generator:/stylegan -u $(id -u):$(id -g) digitman/tf_gan bash
+```
 
 #### CPU
+```
 sudo docker build -t digitman/tf_gan_cpu -f docker/generator/Dockerfile.cpu generator
 sudo docker run -it --rm -v `pwd`/generator:/stylegan -u $(id -u):$(id -g) -p 8888:8888 digitman/tf_gan_cpu bash
 jupyter notebook --port 8888 --ip 0.0.0.0 --allow-root # without -u option
-
+```
 ### Run generation 
+```
 rsync -av -e "ssh -p 28187" --exclude=".idea" ganarts root@ssh4.vast.ai:/root # sync local files with server
+```
+
 In docker:
+```
 cd generator; python main.py
+```
 
 Generating 1024 images:
-- ~8Gb GPU memory for batch size 16
+- ~8Gb GPU memory with batch size 16
 - 256 seconds
-- ~ $0.02
+- ~ $0.02 to compute (vast.ai)
 - 790 Mb on disk
-
+- ~$0.025/month to store (aws s3)
+- ~$0.01/1Gb SELECT from s3
 
 ### Upload to S3
+```
 - pip install awscli
 - aws configure (eu-central-1)
 - aws s3 ls s3://ganarts
@@ -31,7 +42,9 @@ Generating 1024 images:
 - aws s3 mb s3://ganarts
 - aws s3 sync generated_images s3://ganarts/images/
 - aws s3 sync s3://ganarts/images/ downloaded
-## Deploy
+```
+
+## Deploy options
 - cpu: layers converting is needed
 - gpu: high renting cost
 - s3: generating on gpu server, save to s3, serve on cpu server
