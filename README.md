@@ -70,6 +70,9 @@ https://medium.com/@rupak.thakur/aws-vs-paperspace-vs-floydhub-choosing-your-clo
 
 ## Server
 ### Running
+
 ```
+export AWSAccessKeyId=...
+export AWSSecretKey=...
 python server/app.py
 ```
