@@ -45,6 +45,10 @@ Generating 1024 images:
 - aws s3 sync s3://ganarts/images/ downloaded
 ```
 
+#### Store now
+- 21981 images
+- 46Gb
+
 ## Deploy options
 - cpu: layers converting is needed
 - gpu: high renting cost

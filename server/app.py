@@ -12,10 +12,10 @@ images_path = 'images'
 t_shirt_path = 't_shirt'
 current_image = 0
 batch_size = 9
-max_images = 1024
+max_images = 21981
 update_delta = 10  # 60
 last_update = 0
-random.seed(24)
+# random.seed(24)
 
 client = boto3.client(
     's3',
@@ -28,17 +28,22 @@ server_images_index = list(range(max_images))
 random.shuffle(server_images_index)
 
 
-def make_t_shirts():
+def make_t_shirts_and_smalls():
     for i in range(batch_size):
         img = Image.open('{}/image_{}.png'.format(images_path, i), 'r')
 
         background = Image.open('static/t_shirt.jpg', 'r')
         bg_w, bg_h = background.size
+
+        img = img.resize((bg_w, bg_h))
+        img.save('{}/image_{}_small.png'.format(images_path, i))
+
         img = img.resize((bg_w // 10 * 4, bg_h // 10 * 4))
         img_w, img_h = img.size
 
         offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 10 * 6)
         background.paste(img, offset)
+
         background.save('{}/image_{}.png'.format(t_shirt_path, i))
 
 
@@ -61,7 +66,7 @@ def download_next_images():
             current_image = 0
             random.shuffle(server_images_index)
 
-    make_t_shirts()
+    make_t_shirts_and_smalls()
 
 
 def update_images():

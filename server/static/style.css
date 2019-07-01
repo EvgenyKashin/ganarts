@@ -31,3 +31,26 @@ footer {
 footer p {
   margin-bottom: .25rem;
 }
+
+/*.hidden_element {*/
+  /*display: none;*/
+/*}*/
+
+/*.hidden_element:hover {*/
+  /*display: block;*/
+/*}*/
+
+/*.visible_element {*/
+  /*display: block;*/
+/*}*/
+
+/*.visible_element:hover {*/
+  /*display: none;*/
+/*}*/
+
+.hidden_element, .card-body:hover .visible_element{
+   display:none
+}
+.visible_element, .card-body:hover .hidden_element{
+   display:block
+}
