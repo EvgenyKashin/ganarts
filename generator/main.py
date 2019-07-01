@@ -16,10 +16,13 @@ with open('weights.pkl', 'rb') as f:
     _G, _D, Gs = pickle.load(f)
 
 
-def generate_images(n_samples, batch_size, start_from):
+def generate_images(n_samples, batch_size, start_from, truncation_psi):
     start_time = time.time()
+    rnd = np.random.RandomState(5)
+
     for ep in range(n_samples // batch_size):
-        latents = np.random.rand(batch_size, Gs.input_shape[1])
+        latents = rnd.randn(batch_size, Gs.input_shape[1])
+        # latents = np.random.rand(batch_size, Gs.input_shape[1])
         fmt = dict(func=tflib.convert_images_to_uint8, nchw_to_nhwc=True)
         images = Gs.run(latents, None, truncation_psi=0.7, randomize_noise=True,
                         output_transform=fmt, is_cpu=is_cpu)
@@ -37,8 +40,11 @@ if __name__ == '__main__':
     parser.add_argument('--n_samples', type=int, default=1024)
     parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--start_from', type=int, default=0)
+    parser.add_argument('--truncation_psi', type=float, default=0.7)
 
     args = parser.parse_args()
-    generate_images(args.n_samples, args.batch_size, args.start_from)
+    generate_images(args.n_samples, args.batch_size, args.start_from,
+                    args.truncation_psi)
+
 
 

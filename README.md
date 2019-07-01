@@ -17,12 +17,13 @@ jupyter notebook --port 8888 --ip 0.0.0.0 --allow-root # without -u option
 ```
 ### Run generation 
 ```
-rsync -av -e "ssh -p 28187" --exclude=".idea" ganarts root@ssh4.vast.ai:/root # sync local files with server
+rsync -av -e "ssh -p 32237" --exclude=".idea" ganarts root@ssh4.vast.ai:/root # sync local files with server
 ```
 
 In docker:
 ```
-cd generator; python main.py
+cd generator
+python main.py --n_samples 64 --truncation_psi 0.7
 ```
 
 Generating 1024 images:
