@@ -82,6 +82,7 @@ def index():
 def serve_image(filename):
     return send_from_directory(images_path,
                                filename,
+                               as_attachment=True,
                                cache_timeout=-1)
 
 

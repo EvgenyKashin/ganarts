@@ -2,3 +2,4 @@ generator/weights.pkl
 .idea
 __pycache__
 server/images
+server/t_shirt
