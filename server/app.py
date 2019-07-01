@@ -3,14 +3,17 @@ import time
 import os
 from flask import Flask, render_template, send_from_directory
 import boto3
+from PIL import Image
 
-app = Flask(__name__, template_folder='static')
+
+app = Flask(__name__)
 
 images_path = 'images'
+t_shirt_path = 't_shirt'
 current_image = 0
 batch_size = 9
 max_images = 1024
-update_delta = 10
+update_delta = 10  # 60
 last_update = 0
 random.seed(24)
 
@@ -23,6 +26,20 @@ client = boto3.client(
 
 server_images_index = list(range(max_images))
 random.shuffle(server_images_index)
+
+
+def make_t_shirts():
+    for i in range(batch_size):
+        img = Image.open('{}/image_{}.png'.format(images_path, i), 'r')
+
+        background = Image.open('static/t_shirt.jpg', 'r')
+        bg_w, bg_h = background.size
+        img = img.resize((bg_w // 10 * 4, bg_h // 10 * 4))
+        img_w, img_h = img.size
+
+        offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 10 * 6)
+        background.paste(img, offset)
+        background.save('{}/image_{}.png'.format(t_shirt_path, i))
 
 
 def download_next_images():
@@ -44,6 +61,8 @@ def download_next_images():
             current_image = 0
             random.shuffle(server_images_index)
 
+    make_t_shirts()
+
 
 def update_images():
     global last_update
@@ -62,6 +81,13 @@ def index():
 @app.route('/images/<filename>')
 def serve_image(filename):
     return send_from_directory(images_path,
+                               filename,
+                               cache_timeout=-1)
+
+
+@app.route('/t_shirt/<filename>')
+def serve_t_shirt(filename):
+    return send_from_directory(t_shirt_path,
                                filename,
                                cache_timeout=-1)
 
