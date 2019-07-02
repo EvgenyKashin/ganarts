@@ -48,7 +48,7 @@ Generating 1024 images:
 #### Store now
 - 21981 images
 - 46Gb
-
+- weights.pkl ~300mb
 ## Deploy options
 - cpu: layers converting is needed
 - gpu: high renting cost

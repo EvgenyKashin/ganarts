@@ -13,7 +13,7 @@ t_shirt_path = 't_shirt'
 current_image = 0
 batch_size = 9
 max_images = 21981
-update_delta = 10  # 60
+update_delta = 30  # 60
 last_update = 0
 # random.seed(24)
 
@@ -31,16 +31,25 @@ random.shuffle(server_images_index)
 def make_t_shirts_and_smalls():
     for i in range(batch_size):
         img = Image.open('{}/image_{}.png'.format(images_path, i), 'r')
+        logo = Image.open('static/logo_op.png', 'r')
+        logo.load()
+
+        # insert logo
+        img_w, img_h = img.size
+        offset = (img_w // 80 * 71, img_h // 30 * 29)
+        img.paste(logo, offset, mask=logo.split()[3])
+        img.save('{}/image_{}.png'.format(images_path, i))
 
         background = Image.open('static/t_shirt.jpg', 'r')
         bg_w, bg_h = background.size
 
+        # make small image
         img = img.resize((bg_w, bg_h))
         img.save('{}/image_{}_small.png'.format(images_path, i))
 
+        # insert image in t-shirt
         img = img.resize((bg_w // 10 * 4, bg_h // 10 * 4))
         img_w, img_h = img.size
-
         offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 10 * 6)
         background.paste(img, offset)
 
