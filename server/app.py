@@ -4,6 +4,8 @@ import os
 from flask import Flask, render_template, send_from_directory
 import boto3
 from PIL import Image
+from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool
 
 
 app = Flask(__name__)
@@ -31,8 +33,19 @@ logo = Image.open('static/logo_op.png', 'r')
 logo.load()
 background = Image.open('static/t_shirt.jpg', 'r')
 
+# from PIL import ImageFile
+# ImageFile.LOAD_TRUNCATED_IMAGES = True
+# ImageFile.MAXBLOCK = 65536 * 2
+
+# import io
+
 
 def make_t_shirt_and_small(i):
+    # with open('{}/image_{}.png'.format(images_path, i), 'rb') as f:
+    #     img = Image.open(io.BytesIO(f.read()))
+    #     # img = Image.open(f)
+    #     img.load()
+
     img = Image.open('{}/image_{}.png'.format(images_path, i), 'r')
 
     # insert logo
@@ -54,26 +67,39 @@ def make_t_shirt_and_small(i):
 
     background.save('{}/image_{}.png'.format(t_shirt_path, i))
 
+    img.close()
+
+
+def download_and_process_image(tup):
+    i, server_index = tup
+    client.download_file('ganarts',
+                         '{}/image_{}.png'.format(images_path,
+                                                  server_index),
+                         '{}/image_{}.png'.format(images_path, i))
+    make_t_shirt_and_small(i)
+
 
 def download_next_images():
     """
     Shuffle s3 images index and iterating in it.
     Download batch_size images from s3 and save in with names from 0 to 9.png.
     When s3 images end, shuffle and start iterating from the beginning.
+    Inserting my logo, creating small version of image, insert image in t-shirt.
     """
     global current_image
+    server_indexes = []
+
     for i in range(batch_size):
-        server_index = server_images_index[current_image]
-        client.download_file('ganarts',
-                             '{}/image_{}.png'.format(images_path,
-                                                      server_index),
-                             '{}/image_{}.png'.format(images_path, i))
-        make_t_shirt_and_small(i)
+        server_indexes.append(server_images_index[current_image])
 
         current_image += 1
         if current_image >= max_images:
             current_image = 0
             random.shuffle(server_images_index)
+
+    pool = ThreadPool(9)  # Pool(9)
+    pool.map(download_and_process_image, enumerate(server_indexes))
+    pool.close()
 
 
 def update_images():

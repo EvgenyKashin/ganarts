@@ -91,8 +91,10 @@ gunicorn --bind 0.0.0.0:5000 --workers=1 app:app
 - time python multiple_sync_request_threaded.py -nr 1000 -nt 20
 - wrk -t12 -c100 -d60s http://127.0.0.1:5000
 - python -c "import app; app.benchmark()"
-
+```
 Results:
 - baseline: 100,144,100ms lat, 23,16,47rps, timeouts 193, 193, 289, benchmark 14, 13, 13
 - keep t-shirt image and logo in memory, drop one redundant loop: benchmark 13.7, 12.7, 12.3
-```
+- parallel image downloading-processing(not tested well): 125,133,113ms lat, 345,285,255rps, timeouts 384x3, benchmark 8.3, 9, 6.7
+
+Pool - truncated images, non blocking code problem. Tread pool - error in images order.
