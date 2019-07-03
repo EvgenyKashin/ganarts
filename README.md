@@ -94,5 +94,5 @@ gunicorn --bind 0.0.0.0:5000 --workers=1 app:app
 
 Results:
 - baseline: 100,144,100ms lat, 23,16,47rps, timeouts 193, 193, 289, benchmark 14, 13, 13
-
+- keep t-shirt image and logo in memory, drop one redundant loop: benchmark 13.7, 12.7, 12.3
 ```

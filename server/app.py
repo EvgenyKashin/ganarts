@@ -27,33 +27,32 @@ client = boto3.client(
 server_images_index = list(range(max_images))
 random.shuffle(server_images_index)
 
+logo = Image.open('static/logo_op.png', 'r')
+logo.load()
+background = Image.open('static/t_shirt.jpg', 'r')
 
-def make_t_shirts_and_smalls():
-    for i in range(batch_size):
-        img = Image.open('{}/image_{}.png'.format(images_path, i), 'r')
-        logo = Image.open('static/logo_op.png', 'r')
-        logo.load()
 
-        # insert logo
-        img_w, img_h = img.size
-        offset = (img_w // 80 * 71, img_h // 30 * 29)
-        img.paste(logo, offset, mask=logo.split()[3])
-        img.save('{}/image_{}.png'.format(images_path, i))
+def make_t_shirt_and_small(i):
+    img = Image.open('{}/image_{}.png'.format(images_path, i), 'r')
 
-        background = Image.open('static/t_shirt.jpg', 'r')
-        bg_w, bg_h = background.size
+    # insert logo
+    img_w, img_h = img.size
+    offset = (img_w // 80 * 71, img_h // 30 * 29)
+    img.paste(logo, offset, mask=logo.split()[3])
+    img.save('{}/image_{}.png'.format(images_path, i))
 
-        # make small image
-        img = img.resize((bg_w, bg_h))
-        img.save('{}/image_{}_small.png'.format(images_path, i))
+    # make small image
+    bg_w, bg_h = background.size
+    img = img.resize((bg_w, bg_h))
+    img.save('{}/image_{}_small.png'.format(images_path, i))
 
-        # insert image in t-shirt
-        img = img.resize((bg_w // 10 * 4, bg_h // 10 * 4))
-        img_w, img_h = img.size
-        offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 10 * 6)
-        background.paste(img, offset)
+    # insert image in t-shirt
+    img = img.resize((bg_w // 10 * 4, bg_h // 10 * 4))
+    img_w, img_h = img.size
+    offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 10 * 6)
+    background.paste(img, offset)
 
-        background.save('{}/image_{}.png'.format(t_shirt_path, i))
+    background.save('{}/image_{}.png'.format(t_shirt_path, i))
 
 
 def download_next_images():
@@ -69,13 +68,12 @@ def download_next_images():
                              '{}/image_{}.png'.format(images_path,
                                                       server_index),
                              '{}/image_{}.png'.format(images_path, i))
+        make_t_shirt_and_small(i)
 
         current_image += 1
         if current_image >= max_images:
             current_image = 0
             random.shuffle(server_images_index)
-
-    make_t_shirts_and_smalls()
 
 
 def update_images():
