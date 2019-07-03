@@ -13,7 +13,7 @@ t_shirt_path = 't_shirt'
 current_image = 0
 batch_size = 9
 max_images = 21981
-update_delta = 30  # 60
+update_delta = 15  # 60
 last_update = 0
 # random.seed(24)
 
@@ -109,3 +109,10 @@ def serve_t_shirt(filename):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
+
+
+def benchmark():
+    for i in range(3):
+        start = time.time()
+        download_next_images()
+        print('{:.2f}'.format(time.time() - start))
