@@ -39,17 +39,27 @@ background = Image.open('static/t_shirt.jpg', 'r')
 
 
 def make_t_shirt_and_small(i):
+    s = time.time()
     img = Image.open('{}/image_{}.png'.format(images_path, i), 'r')
+    print('Open image {:.3f}s'.format(time.time() - s))
 
     # insert logo
+    s = time.time()
     img_w, img_h = img.size
     offset = (img_w // 80 * 71, img_h // 30 * 29)
     img.paste(logo, offset, mask=logo.split()[3])
+    print('Insert logo {:.3f}s'.format(time.time() - s))
+
+    s = time.time()
     img.save('{}/image_{}.png'.format(images_path, i))
+    print('Save image {:.3f}s'.format(time.time() - s))
 
     # make small image
+    s = time.time()
     bg_w, bg_h = background.size
     img = img.resize((bg_w, bg_h))
+    print('Resize {:.3f}s'.format(time.time() - s))
+
     img.save('{}/image_{}_small.png'.format(images_path, i))
 
     # insert image in t-shirt
@@ -64,11 +74,12 @@ def make_t_shirt_and_small(i):
 
 
 def download_and_process_image(i, server_index):
-    # i, server_index = tup
+    s = time.time()
     client.download_file('ganarts',
                          '{}/image_{}.png'.format(images_path,
                                                   server_index),
                          '{}/image_{}.png'.format(images_path, i))
+    print('Download {:.1f}s'.format(time.time() - s))
     make_t_shirt_and_small(i)
 
 
@@ -90,14 +101,12 @@ def download_next_images():
             current_image = 0
             random.shuffle(server_images_index)
 
-    # pool = ThreadPool(1)  # Pool(9)
-    # pool.map(download_and_process_image, enumerate(server_indexes))
-    # pool.close()
+    for i, server_index in enumerate(server_indexes):
+        download_and_process_image(i, server_index)
 
-    for tup in enumerate(server_indexes):
-        t = threading.Thread(target=download_and_process_image, args=tup)
-        t.start()
-        t.join()
+        # t = threading.Thread(target=download_and_process_image, args=tup)
+        # t.start()
+        # t.join()
 
 
 def update_images():
