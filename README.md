@@ -26,14 +26,6 @@ cd generator
 python main.py --n_samples 64 --truncation_psi 0.7
 ```
 
-Generating 1024 images:
-- ~8Gb GPU memory with batch size 16
-- 256 seconds
-- ~ $0.02 to compute (vast.ai)
-- 790 Mb on disk
-- ~$0.025/month to store (aws s3)
-- ~$0.01/1Gb SELECT from s3
-
 ### Upload to S3
 ```
 - pip install awscli
@@ -49,6 +41,17 @@ Generating 1024 images:
 - 21981 images
 - 46Gb
 - weights.pkl ~300mb
+
+## Prices
+Generating 1024 images:
+- ~8Gb GPU memory with batch size 16
+- 256 seconds
+- ~ $0.02 to compute (vast.ai)
+- 790 Mb on disk
+- ~$0.025/1Gb month to store (aws s3)
+- ~$0.09/1Gb transfer from s3
+- ~$0.01 per 1000 PUT/SELECT requests
+
 ## Deploy options
 - cpu: layers converting is needed
 - gpu: high renting cost
