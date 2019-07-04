@@ -39,27 +39,17 @@ background = Image.open('static/t_shirt.jpg', 'r')
 
 
 def make_t_shirt_and_small(i):
-    s = time.time()
     img = Image.open('{}/image_{}.png'.format(images_path, i), 'r')
-    print('Open image {:.3f}s'.format(time.time() - s))
 
     # insert logo
-    s = time.time()
     img_w, img_h = img.size
     offset = (img_w // 80 * 71, img_h // 30 * 29)
     img.paste(logo, offset, mask=logo.split()[3])
-    print('Insert logo {:.3f}s'.format(time.time() - s))
-
-    s = time.time()
     img.save('{}/image_{}.png'.format(images_path, i))
-    print('Save image {:.3f}s'.format(time.time() - s))
 
     # make small image
-    s = time.time()
     bg_w, bg_h = background.size
     img = img.resize((bg_w, bg_h))
-    print('Resize {:.3f}s'.format(time.time() - s))
-
     img.save('{}/image_{}_small.png'.format(images_path, i))
 
     # insert image in t-shirt
@@ -74,12 +64,10 @@ def make_t_shirt_and_small(i):
 
 
 def download_and_process_image(i, server_index):
-    s = time.time()
     client.download_file('ganarts',
                          '{}/image_{}.png'.format(images_path,
                                                   server_index),
                          '{}/image_{}.png'.format(images_path, i))
-    print('Download {:.1f}s'.format(time.time() - s))
     make_t_shirt_and_small(i)
 
 
