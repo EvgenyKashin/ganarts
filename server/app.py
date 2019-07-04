@@ -6,6 +6,7 @@ import boto3
 from PIL import Image
 from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
+import threading
 
 
 app = Flask(__name__)
@@ -35,17 +36,9 @@ background = Image.open('static/t_shirt.jpg', 'r')
 
 # from PIL import ImageFile
 # ImageFile.LOAD_TRUNCATED_IMAGES = True
-# ImageFile.MAXBLOCK = 65536 * 2
-
-# import io
 
 
 def make_t_shirt_and_small(i):
-    # with open('{}/image_{}.png'.format(images_path, i), 'rb') as f:
-    #     img = Image.open(io.BytesIO(f.read()))
-    #     # img = Image.open(f)
-    #     img.load()
-
     img = Image.open('{}/image_{}.png'.format(images_path, i), 'r')
 
     # insert logo
@@ -70,8 +63,8 @@ def make_t_shirt_and_small(i):
     img.close()
 
 
-def download_and_process_image(tup):
-    i, server_index = tup
+def download_and_process_image(i, server_index):
+    # i, server_index = tup
     client.download_file('ganarts',
                          '{}/image_{}.png'.format(images_path,
                                                   server_index),
@@ -97,9 +90,14 @@ def download_next_images():
             current_image = 0
             random.shuffle(server_images_index)
 
-    pool = ThreadPool(9)  # Pool(9)
-    pool.map(download_and_process_image, enumerate(server_indexes))
-    pool.close()
+    # pool = ThreadPool(1)  # Pool(9)
+    # pool.map(download_and_process_image, enumerate(server_indexes))
+    # pool.close()
+
+    for tup in enumerate(server_indexes):
+        t = threading.Thread(target=download_and_process_image, args=tup)
+        t.start()
+        t.join()
 
 
 def update_images():

@@ -99,5 +99,6 @@ Results:
 - baseline: 100,144,100ms lat, 23,16,47rps, timeouts 193, 193, 289, benchmark 14, 13, 13
 - keep t-shirt image and logo in memory, drop one redundant loop: benchmark 13.7, 12.7, 12.3
 - parallel image downloading-processing(not tested well): 125,133,113ms lat, 345,285,255rps, timeouts 384x3, benchmark 8.3, 9, 6.7
-
+- parallel image downloading-processing (Threads - no bug): 169ms lat, 14 rps, benchmark 14, 14, 13
 Pool - truncated images, non blocking code problem. Tread pool - error in images order.
+Raw thread very slow
