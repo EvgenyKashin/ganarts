@@ -101,4 +101,4 @@ Results:
 - parallel image downloading-processing(not tested well): 125,133,113ms lat, 345,285,255rps, timeouts 384x3, benchmark 8.3, 9, 6.7
 - parallel image downloading-processing (Threads - no bug): 169ms lat, 14 rps, benchmark 14, 14, 13
 Pool - truncated images, non blocking code problem. Tread pool - error in images order.
-Raw thread very slow
+Raw thread very slow. Raw thread with separate session for each thread - error.
