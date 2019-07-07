@@ -1,11 +1,15 @@
 import time
+from pathlib import Path
 from flask import Flask, render_template, send_from_directory
 
 app = Flask(__name__)
+sync_file = Path('sync_file')
+sync_file.touch()
 
 
 @app.route('/')
 def index():
+    sync_file.touch()
     return render_template('index.html',
                            indexes=list(range(9)))
 

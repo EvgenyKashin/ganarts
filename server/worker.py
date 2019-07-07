@@ -24,6 +24,7 @@ client = boto3.client(
 server_images_index = list(range(max_images))
 random.shuffle(server_images_index)
 background = Image.open('static/t_shirt.jpg', 'r')
+sync_file = Path('sync_file')
 
 
 def make_t_shirt(i, save_folder):
@@ -75,6 +76,7 @@ def download_next_images(save_folder):
 
 def update_images():
     last_update = 0
+    st_atime = os.stat(sync_file).st_atime
     save_folder = Path('images')
     save_temp_folder = Path('temp_images')
 
@@ -82,7 +84,9 @@ def update_images():
     save_folder.mkdir(exist_ok=True)
 
     while True:
-        if time.time() - last_update >= update_delta:
+        cur_time = time.time()
+        if cur_time - last_update > update_delta and\
+           cur_time - st_atime < update_delta * 2:
             s = time.time()
             shutil.rmtree(str(save_folder))
             shutil.move(str(save_temp_folder), str(save_folder))
@@ -93,6 +97,7 @@ def update_images():
             print(f'Downloading: {time.time() - last_update:.3f}s')
         else:
             time.sleep(0.1)
+            st_atime = os.stat(sync_file).st_atime
 
 
 if __name__ == '__main__':
