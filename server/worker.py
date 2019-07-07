@@ -7,12 +7,13 @@ import boto3
 from PIL import Image
 
 
-images_path = 'images'
+images_path = 'small_images'
 t_shirt_path = 't_shirt'
 batch_size = 9
 current_image = 0
 max_images = 21979
 update_delta = 15  # 60
+bucket = 'ganarts'
 
 client = boto3.client(
     's3',
@@ -20,6 +21,7 @@ client = boto3.client(
     aws_secret_access_key=os.environ['AWSSecretKey'],
     region_name='eu-central-1'
 )
+
 
 server_images_index = list(range(max_images))
 random.shuffle(server_images_index)
@@ -42,11 +44,25 @@ def make_t_shirt(i, save_folder):
 
 
 def download_and_process_image(i, server_index, save_folder):
-    client.download_file('ganarts',
+    client.download_file(bucket,
                          '{}/image_{}.png'.format(images_path,
                                                   server_index),
                          '{}/image_{}.png'.format(save_folder, i))
     make_t_shirt(i, save_folder)
+
+
+def make_urls(indexes):
+    urls = []
+    for i in indexes:
+        url = client.generate_presigned_url(
+                                            'get_object',
+                                            Params={
+                                                'Bucket': bucket,
+                                                'Key': f'images_with_logo/'
+                                                       f'image_{i}.png'},
+                                            ExpiresIn=60 * 60)
+        urls.append(url)
+    return urls
 
 
 def download_next_images(save_folder):
@@ -72,6 +88,10 @@ def download_next_images(save_folder):
 
     for i, server_index in enumerate(server_indexes):
         download_and_process_image(i, server_index, save_folder)
+
+    image_urls = make_urls(server_indexes)
+    with open(save_folder / 'urls.txt', 'w') as f:
+        f.writelines([s + '\n' for s in image_urls])
 
 
 def update_images():

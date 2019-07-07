@@ -7,11 +7,17 @@ sync_file = Path('sync_file')
 sync_file.touch()
 
 
+def read_urls():
+    with open('images/urls.txt') as f:
+        urls = f.readlines()
+    return urls
+
 @app.route('/')
 def index():
     sync_file.touch()
+    urls = read_urls()
     return render_template('index.html',
-                           indexes=list(range(9)))
+                           urls=urls)
 
 
 # @app.route('/images/<filename>')
