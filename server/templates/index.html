@@ -74,83 +74,19 @@
 
       <div class="album bg-light">
         <div class="container">
-
           <div class="row">
+            {% for i in indexes %}
             <div class="col-md-4">
               <div class="card mb-4 shadow-sm">
+                <a href="images/image_{{ i }}.png" download>
                 <div class="card-body">
-                  <img src="t_shirt/image_0.png" class="visible_element" width="100%" height="100%">
-                  <img src="images/image_0_small.png" class="hidden_element" width="100%" height="100%">
+                  <img src="images/t_shirt_image_{{ i }}.png" class="visible_element" width="100%" height="100%">
+                  <img src="images/image_{{ i }}.png" class="hidden_element" width="100%" height="100%">
                 </div>
+                </a>
               </div>
             </div>
-            <div class="col-md-4">
-              <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                  <img src="t_shirt/image_1.png" class="visible_element" width="100%" height="100%">
-                  <img src="images/image_1_small.png" class="hidden_element" width="100%" height="100%">
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                  <img src="t_shirt/image_2.png" class="visible_element" width="100%" height="100%">
-                  <img src="images/image_2_small.png" class="hidden_element" width="100%" height="100%">
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                  <img src="t_shirt/image_3.png" class="visible_element" width="100%" height="100%">
-                  <img src="images/image_3_small.png" class="hidden_element" width="100%" height="100%">
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                  <img src="t_shirt/image_4.png" class="visible_element" width="100%" height="100%">
-                  <img src="images/image_4_small.png" class="hidden_element" width="100%" height="100%">
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                  <img src="t_shirt/image_5.png" class="visible_element" width="100%" height="100%">
-                  <img src="images/image_5_small.png" class="hidden_element" width="100%" height="100%">
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                  <img src="t_shirt/image_6.png" class="visible_element" width="100%" height="100%">
-                  <img src="images/image_6_small.png" class="hidden_element" width="100%" height="100%">
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                  <img src="t_shirt/image_7.png" class="visible_element" width="100%" height="100%">
-                  <img src="images/image_7_small.png" class="hidden_element" width="100%" height="100%">
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                  <img src="t_shirt/image_8.png" class="visible_element" width="100%" height="100%">
-                  <img src="images/image_8_small.png" class="hidden_element" width="100%" height="100%">
-                </div>
-              </div>
-            </div>
-
+            {% endfor %}
           </div>
         </div>
       </div>
