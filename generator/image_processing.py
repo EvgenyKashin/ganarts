@@ -6,7 +6,7 @@ from tqdm import tqdm
 from multiprocessing import Pool
 
 logo = Image.open('logo_op.png')
-max_images = 21981
+max_images = 21979
 
 
 def insert_logo(image, i):
