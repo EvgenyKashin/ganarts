@@ -1,4 +1,3 @@
-import time
 from pathlib import Path
 from flask import Flask, render_template, send_from_directory
 
@@ -12,20 +11,13 @@ def read_urls():
         urls = f.readlines()
     return urls
 
+
 @app.route('/')
 def index():
     sync_file.touch()
     urls = read_urls()
     return render_template('index.html',
                            urls=urls)
-
-
-# @app.route('/images/<filename>')
-# def serve_image(filename):
-#     return send_from_directory(images_path,
-#                                filename,
-#                                as_attachment=True,
-#                                cache_timeout=-1)
 
 
 @app.route('/images/<filename>')
@@ -37,10 +29,3 @@ def serve_image(filename):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
-
-
-def benchmark():
-    for i in range(3):
-        start = time.time()
-        download_next_images()
-        print('{:.2f}'.format(time.time() - start))

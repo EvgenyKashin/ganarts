@@ -17,7 +17,7 @@ jupyter notebook --port 8888 --ip 0.0.0.0 --allow-root # without -u option
 ```
 ### Run generation 
 ```
-rsync -av -e "ssh -p 32237" --exclude=".idea" ganarts root@ssh4.vast.ai:/root # sync local files with server
+rsync -av -e "ssh -p 32237" --exclude=".idea" --exclude=".git" ganarts root@ssh4.vast.ai:/root # sync local files with server
 ```
 
 In docker:
