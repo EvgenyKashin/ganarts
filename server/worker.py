@@ -59,7 +59,7 @@ def download_and_process_image(i, server_index):
     img_t_shirt.save(output_img_t_shirt, format=img_t_shirt.format)
 
     redis_conn.set(f'image_{i}', output_img.getvalue())
-    redis_conn.set(f'image_t_shirt_{i}', output_img_t_shirt.getvalue())
+    redis_conn.set(f't_shirt_image_{i}', output_img_t_shirt.getvalue())
     output_img.close()
     output_img_t_shirt.close()
 

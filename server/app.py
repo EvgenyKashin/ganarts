@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
-from flask import Flask, render_template, send_from_directory
+from io import BytesIO
+from flask import Flask, render_template, send_from_directory, send_file
 import redis
 
 app = Flask(__name__)
@@ -15,8 +16,9 @@ def read_urls():
     return urls
 
 
-def load_image():
-    pass
+def load_image(filename):
+    img = redis_conn.get(filename)
+    return img
 
 
 @app.route('/')
@@ -27,11 +29,12 @@ def index():
                            urls=urls)
 
 
-@app.route('/images/<filename>')
+@app.route('/images/<filename>.png')
 def serve_image(filename):
-    return send_from_directory('images',
-                               filename,
-                               cache_timeout=-1)
+    img = load_image(filename)
+    return send_file(BytesIO(img),
+                     mimetype='image/png',
+                     cache_timeout=-1)
 
 
 if __name__ == '__main__':
