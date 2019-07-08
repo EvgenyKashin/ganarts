@@ -45,7 +45,7 @@ def make_t_shirt(img):
     return background
 
 
-def download_and_process_image(i, server_index):
+def download_and_process_image(server_index):
     response = client.get_object(Bucket=bucket,
                                  Key='{}/image_{}.png'.format(images_path,
                                                               server_index))
@@ -58,10 +58,7 @@ def download_and_process_image(i, server_index):
     img.save(output_img, format=img.format)
     img_t_shirt.save(output_img_t_shirt, format=img_t_shirt.format)
 
-    redis_conn.set(f'image_{i}', output_img.getvalue())
-    redis_conn.set(f't_shirt_image_{i}', output_img_t_shirt.getvalue())
-    output_img.close()
-    output_img_t_shirt.close()
+    return output_img, output_img_t_shirt
 
 
 def make_urls(indexes):
@@ -76,6 +73,27 @@ def make_urls(indexes):
                                             ExpiresIn=60 * 60)
         urls.append(url)
     return urls
+
+
+def save_to_redis(images_files, images_urls):
+    """
+    Not such beautiful, like inplace image saving, but it execute
+    all commands in one transaction. It wasn't possible with saving
+    files to filesystem(without redis).
+    """
+    pipeline = redis_conn.pipeline()
+
+    # save images
+    for i, (image, t_shirt_image) in enumerate(images_files):
+        pipeline.set(f'image_{i}', image.getvalue())
+        pipeline.set(f't_shirt_image_{i}', t_shirt_image.getvalue())
+        image.close()
+        t_shirt_image.close()
+
+    # save full size images(s3 urls)
+    redis_conn.set('images_urls', json.dumps(images_urls))
+
+    pipeline.execute()
 
 
 def download_next_images():
@@ -96,11 +114,14 @@ def download_next_images():
             current_image = 0
             random.shuffle(server_images_index)
 
-    for i, server_index in enumerate(server_indexes):
-        download_and_process_image(i, server_index)
+    downloaded_images_files = []
+    for server_index in server_indexes:
+        downloaded_images_files.append(download_and_process_image(server_index))
 
-    image_urls = make_urls(server_indexes)
-    redis_conn.set('images_urls', json.dumps(image_urls))
+    images_urls = make_urls(server_indexes)
+    s = time.time()
+    save_to_redis(downloaded_images_files, images_urls)
+    print(f'Transaction time: {time.time() - s:.3f}s')
 
 
 def update_images():
@@ -111,10 +132,7 @@ def update_images():
         cur_time = time.time()
         if cur_time - last_update > update_delta and\
            cur_time - st_atime < update_delta * 2:
-            s = time.time()
-            # print(f'rm and mv: {time.time() - s:.3f}s')
             last_update = time.time()
-
             download_next_images()
             print(f'Downloading: {time.time() - last_update:.3f}s')
         else:

@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 from io import BytesIO
-from flask import Flask, render_template, send_from_directory, send_file
+from flask import Flask, render_template, send_file
 import redis
 
 app = Flask(__name__)
