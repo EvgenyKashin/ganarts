@@ -30,6 +30,7 @@ server_images_index = list(range(max_images))
 random.shuffle(server_images_index)
 background = Image.open('static/t_shirt.jpg', 'r')
 sync_file = Path('sync_file')
+sync_file.touch()
 
 
 def make_t_shirt(img):
