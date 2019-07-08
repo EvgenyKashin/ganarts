@@ -100,5 +100,8 @@ Results:
 - keep t-shirt image and logo in memory, drop one redundant loop: benchmark 13.7, 12.7, 12.3
 - parallel image downloading-processing(not tested well): 125,133,113ms lat, 345,285,255rps, timeouts 384x3, benchmark 8.3, 9, 6.7
 - parallel image downloading-processing (Threads - no bug): 169ms lat, 14 rps, benchmark 14, 14, 13
+- background image downloading at separate folder: 169,165,170ms lat, 540,554,539rps, 2,0,0 errors
+- background image downloading at separate folder(4 gunicorn worker): 151,131,161ms lat, 584,641,532rps, 4,0,2 errors
+- 
 Pool - truncated images, non blocking code problem. Tread pool - error in images order.
 Raw thread very slow. Raw thread with separate session for each thread - error.
