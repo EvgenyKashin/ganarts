@@ -1,10 +1,12 @@
 import os
 import time
 from pathlib import Path
-import shutil
 import random
+from io import BytesIO
+import json
 import boto3
 from PIL import Image
+import redis
 
 
 images_path = 'small_images'
@@ -22,6 +24,7 @@ client = boto3.client(
     region_name='eu-central-1'
 )
 
+redis_conn = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 server_images_index = list(range(max_images))
 random.shuffle(server_images_index)
@@ -29,8 +32,7 @@ background = Image.open('static/t_shirt.jpg', 'r')
 sync_file = Path('sync_file')
 
 
-def make_t_shirt(i, save_folder):
-    img = Image.open('{}/image_{}.png'.format(save_folder, i))
+def make_t_shirt(img):
     bg_w, bg_h = background.size
 
     # insert image in t-shirt
@@ -40,15 +42,26 @@ def make_t_shirt(i, save_folder):
     offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 10 * 6)
     background.paste(img, offset)
 
-    background.save('{}/t_shirt_image_{}.png'.format(save_folder, i))
+    return background
 
 
-def download_and_process_image(i, server_index, save_folder):
-    client.download_file(bucket,
-                         '{}/image_{}.png'.format(images_path,
-                                                  server_index),
-                         '{}/image_{}.png'.format(save_folder, i))
-    make_t_shirt(i, save_folder)
+def download_and_process_image(i, server_index):
+    response = client.get_object(Bucket=bucket,
+                                 Key='{}/image_{}.png'.format(images_path,
+                                                              server_index))
+    content = response['Body']
+    img = Image.open(content)
+    img_t_shirt = make_t_shirt(img)
+
+    output_img = BytesIO()
+    output_img_t_shirt = BytesIO()
+    img.save(output_img, format=img.format)
+    img_t_shirt.save(output_img_t_shirt, format=img_t_shirt.format)
+
+    redis_conn.set(f'image_{i}', output_img.getvalue())
+    redis_conn.set(f'image_t_shirt_{i}', output_img_t_shirt.getvalue())
+    output_img.close()
+    output_img_t_shirt.close()
 
 
 def make_urls(indexes):
@@ -65,7 +78,7 @@ def make_urls(indexes):
     return urls
 
 
-def download_next_images(save_folder):
+def download_next_images():
     """
     Shuffle s3 images index and iterating in it.
     Download batch_size images from s3 and save in with names from 0 to 9.png.
@@ -74,9 +87,6 @@ def download_next_images(save_folder):
     """
     global current_image
     server_indexes = []
-
-    shutil.rmtree(str(save_folder), ignore_errors=True)
-    save_folder.mkdir()
 
     for i in range(batch_size):
         server_indexes.append(server_images_index[current_image])
@@ -87,33 +97,25 @@ def download_next_images(save_folder):
             random.shuffle(server_images_index)
 
     for i, server_index in enumerate(server_indexes):
-        download_and_process_image(i, server_index, save_folder)
+        download_and_process_image(i, server_index)
 
     image_urls = make_urls(server_indexes)
-    with open(save_folder / 'urls.txt', 'w') as f:
-        f.writelines([s + '\n' for s in image_urls])
+    redis_conn.set('images_urls', json.dumps(image_urls))
 
 
 def update_images():
     last_update = 0
     st_atime = os.stat(sync_file).st_atime
-    save_folder = Path('images')
-    save_temp_folder = Path('temp_images')
-
-    download_next_images(save_temp_folder)
-    save_folder.mkdir(exist_ok=True)
 
     while True:
         cur_time = time.time()
         if cur_time - last_update > update_delta and\
            cur_time - st_atime < update_delta * 2:
             s = time.time()
-            shutil.rmtree(str(save_folder))
-            shutil.move(str(save_temp_folder), str(save_folder))
-            print(f'rm and mv: {time.time() - s:.3f}s')
+            # print(f'rm and mv: {time.time() - s:.3f}s')
             last_update = time.time()
 
-            download_next_images(save_temp_folder)
+            download_next_images()
             print(f'Downloading: {time.time() - last_update:.3f}s')
         else:
             time.sleep(0.1)
