@@ -103,5 +103,15 @@ Results:
 - background image downloading at separate folder: 169,165,170ms lat, 540,554,539rps, 2,0,0 errors
 - background image downloading at separate folder(4 gunicorn worker): 151,131,161ms lat, 584,641,532rps, 4,0,2 errors
 - background image downloading, redis, 4 gunicorn workers: 145,123,125ms, 587,678,673rps, 0(!) errors.
+
 Pool - truncated images, non blocking code problem. Tread pool - error in images order.
 Raw thread very slow. Raw thread with separate session for each thread - error.
+
+### Docker
+```
+sudo docker build -t flask_server -f docker/server/Dockerfile ./server
+sudo docker run -it --rm -p 5000:5000 flask_server
+sudo docker run redis
+```
+## Super resolution
+- http://waifu2x.udp.jp/

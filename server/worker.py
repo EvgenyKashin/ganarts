@@ -24,7 +24,7 @@ client = boto3.client(
     region_name='eu-central-1'
 )
 
-redis_conn = redis.StrictRedis(host='localhost', port=6379, db=0)
+redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
 
 server_images_index = list(range(max_images))
 random.shuffle(server_images_index)

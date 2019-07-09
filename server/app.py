@@ -7,7 +7,7 @@ import redis
 app = Flask(__name__)
 sync_file = Path('sync_file')
 sync_file.touch()
-redis_conn = redis.StrictRedis(host='localhost', port=6379, db=0)
+redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
 
 
 def read_urls():
