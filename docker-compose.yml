@@ -1,0 +1,12 @@
+version: '3'
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: $PWD/docker/server/Dockerfile
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+  redis:
+    image: "redis:alpine"

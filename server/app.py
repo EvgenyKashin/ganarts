@@ -12,7 +12,7 @@ redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
 
 def read_urls():
     urls = redis_conn.get('images_urls')
-    urls = json.loads(urls if urls is not None else [])
+    urls = json.loads(urls if urls is not None else '[]')
     return urls
 
 

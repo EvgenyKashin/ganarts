@@ -127,7 +127,7 @@ def download_next_images():
 
 def update_images():
     last_update = 0
-    st_atime = os.stat(sync_file).st_atime
+    st_atime = 0
 
     while True:
         cur_time = time.time()
