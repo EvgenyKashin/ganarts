@@ -115,3 +115,14 @@ sudo docker run redis
 ```
 ## Super resolution
 - http://waifu2x.udp.jp/
+
+## EC2
+- t3 micro
+- attach static ip
+- update dns records
+- ssh -i ~/.ssh/aws_frankfurn.pem ubuntu@35.157.171.57 -L 80:localhost:8080
+- sudo snap install docker
+- https://docs.docker.com/compose/install/
+- git clone https://github.com/EvgenyKashin/ganarts.git
+- create .env with access keys
+- sudo docker-compose up
