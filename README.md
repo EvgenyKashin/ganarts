@@ -125,4 +125,4 @@ sudo docker run redis
 - https://docs.docker.com/compose/install/
 - git clone https://github.com/EvgenyKashin/ganarts.git
 - create .env with access keys
-- sudo docker-compose up
+- sudo docker-compose up -d
