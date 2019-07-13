@@ -91,9 +91,7 @@ gunicorn --bind 0.0.0.0:5000 --workers=1 app:app
 ```
 ### Testing rps
 ```
-- time python multiple_sync_request_threaded.py -nr 1000 -nt 20
 - wrk -t12 -c100 -d60s http://127.0.0.1:5000
-- python -c "import app; app.benchmark()"
 ```
 Results:
 - baseline: 100,144,100ms lat, 23,16,47rps, timeouts 193, 193, 289, benchmark 14, 13, 13
