@@ -3,7 +3,6 @@ services:
   server:
     build:
       context: ./server
-      dockerfile: $PWD/docker/server/Dockerfile
     ports:
       - "80:5000"
     env_file:
