@@ -46,14 +46,20 @@
             <div class="row">
               <div class="col-sm-8 col-md-7 py-4">
                 <h4 class="text-white">About</h4>
-                <p class="text-muted">Add some information about the album below, the author, or any other background context. Make it a few sentences long so folks can pick up some informative tidbits. Then, link them off to some social networking sites or contact information.</p>
+                <p class="text-muted">Pictures are generated with <a href="https://github.com/NVlabs/stylegan">StyleGAN</a>
+                  trained on 40k modern art images. Training process takes 3 days on 4x1080ti GPUs.
+                  Every 30 seconds 9 new images are appeared. For printing this images use specialized sites(place for your ad).
+                  For bigger resolution you can use <a href="http://waifu2x.udp.jp">super resolution</a>(increase image size
+                  from 1024px to 2048px).
+                </p>
               </div>
               <div class="col-sm-4 offset-md-1 py-4">
                 <h4 class="text-white">Contact</h4>
                 <ul class="list-unstyled">
-                  <li><a href="#" class="text-white">Follow on Twitter</a></li>
-                  <li><a href="#" class="text-white">Like on Facebook</a></li>
-                  <li><a href="#" class="text-white">Email me</a></li>
+                  <li><a href="https://twitter.com/digitman_" class="text-white" target="_blank">Like on Twitter</a></li>
+                  <li><a href="https://www.facebook.com/profile.php?id=100010913490716" class="text-white" target="_blank">Like on Facebook</a></li>
+                  <li><a href="https://github.com/EvgenyKashin/ganarts" class="text-white" target="_blank">Star on GitHub</a></li>
+                  <li><a href="#donate" class="text-white">Donate for GPU renting(page footer)</a></li>
                 </ul>
               </div>
             </div>
@@ -76,9 +82,9 @@
       <section class="jumbotron text-center">
         <div class="container">
           <h2 class="jumbotron-heading">This T-shirt does not exist</h2>
-          <p class="lead text-muted">All this T-shirt were generated and aren't real.
-              Click to download full size image for printing it.
-              T-shirts are updated every minute.
+          <p class="lead text-muted">All this modern art prints were generated and aren't exist.
+              Click to download full size image for printing it on real T-shirt.
+              Prints are updated every 30 seconds.
           </p>
         </div>
       </section>
@@ -110,7 +116,7 @@
           <a href="#" class="btn btn-primary btn-default">To top</a>
         </p>
         <p>
-          Donate to rent a GPU:
+          <p id="donate">Donate for GPU renting:</p>
           <a href="https://yasobe.ru/na/na_oplatu_gpu" target="_blank">
             <button class="btn btn-success">Yandex.Money</button></a>
           <a href="https://www.paypal.me/digitman" target="_blank">
