@@ -14,7 +14,7 @@ t_shirt_path = 't_shirt'
 batch_size = 9
 current_image = 0
 max_images = 21979
-update_delta = 15  # 60
+update_delta = 30
 bucket = 'ganarts'
 
 client = boto3.client(
