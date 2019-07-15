@@ -8,9 +8,10 @@ and the old ones are deleted. To print these images,
 use specialized sites(place for your ad). To increase the resolution, 
 you can use a [super resolution](http://waifu2x.udp.jp) (increase the image size from 1024px to 2048px).
 
+<img src="img/demo.gif">
+
 Repo consist of [generator](generator)(based on StyleGAN) and 
 [server](server)(flask + gunicorn + redis + s3).
-
 ## Deploy options
 - cpu: layers converting is needed(NCHW -> NHWC)
 - gpu: high renting cost
