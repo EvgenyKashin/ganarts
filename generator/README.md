@@ -15,7 +15,7 @@ sudo docker run -it --rm -v `pwd`/generator:/stylegan -u $(id -u):$(id -g) -p 88
 jupyter notebook --port 8888 --ip 0.0.0.0 --allow-root
 ```
 ## Run image generation 
-Upload local files to server:
+Upload local files(with model weights)to server:
 ```
 rsync -av -e "ssh -p 32237" --exclude=".idea" --exclude=".git" ganarts root@ssh4.vast.ai:/root
 ```
