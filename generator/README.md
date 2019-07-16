@@ -24,6 +24,7 @@ In docker:
 ```
 cd generator
 python main.py --n_samples 64 --truncation_psi 0.7
+python image_processing.py --small_size 512
 ```
 
 ## Quick S3 help
