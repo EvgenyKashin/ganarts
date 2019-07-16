@@ -16,8 +16,9 @@ current_image = 0
 max_images = 21979
 update_delta = 30
 bucket = 'ganarts'
+expires_hours = 24
 
-client = boto3.client(
+client_s3 = boto3.client(
     's3',
     aws_access_key_id=os.environ['AWSAccessKeyId'],
     aws_secret_access_key=os.environ['AWSSecretKey'],
@@ -47,9 +48,9 @@ def make_t_shirt(img):
 
 
 def download_and_process_image(server_index):
-    response = client.get_object(Bucket=bucket,
-                                 Key='{}/image_{}.png'.format(images_path,
-                                                              server_index))
+    response = client_s3.get_object(Bucket=bucket,
+                                    Key='{}/image_{}.png'.format(images_path,
+                                                                 server_index))
     content = response['Body']
     img = Image.open(content)
     img_t_shirt = make_t_shirt(img)
@@ -65,13 +66,13 @@ def download_and_process_image(server_index):
 def make_urls(indexes):
     urls = []
     for i in indexes:
-        url = client.generate_presigned_url(
+        url = client_s3.generate_presigned_url(
                                             'get_object',
                                             Params={
                                                 'Bucket': bucket,
                                                 'Key': f'images_with_logo/'
                                                        f'image_{i}.png'},
-                                            ExpiresIn=60 * 60)
+                                            ExpiresIn=60 * expires_hours)
         urls.append(url)
     return urls
 
