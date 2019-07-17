@@ -7,11 +7,12 @@ import redis
 app = Flask(__name__)
 sync_file = Path('sync_file')
 sync_file.touch()
+prefix_file = Path('prefix_file')
 redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
 
 
-def read_urls():
-    urls = redis_conn.get('images_urls')
+def read_urls(prefix):
+    urls = redis_conn.get(f'{prefix}_images_urls')
     urls = json.loads(urls if urls is not None else '[]')
     return urls
 
@@ -24,9 +25,12 @@ def load_image(filename):
 @app.route('/')
 def index():
     sync_file.touch()
-    urls = read_urls()
+    prefix = prefix_file.read_text()
+
+    urls = read_urls(prefix)
     return render_template('index.html',
-                           urls=urls)
+                           urls=urls,
+                           prefix=prefix)
 
 
 @app.route('/images/<filename>.png')

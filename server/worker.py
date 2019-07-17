@@ -30,9 +30,11 @@ redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
 server_images_index = list(range(max_images))
 random.shuffle(server_images_index)
 background = Image.open('static/t_shirt.jpg', 'r')
+
 sync_file = Path('sync_file')
 sync_file.touch()
-
+prefix_file = Path('prefix_file')
+prefix_file.touch()
 
 def make_t_shirt(img):
     bg_w, bg_h = background.size
@@ -77,7 +79,7 @@ def make_urls(indexes):
     return urls
 
 
-def save_to_redis(images_files, images_urls):
+def save_to_redis(images_files, images_urls, prefix):
     """
     Not such beautiful, like inplace image saving, but it execute
     all commands in one transaction. It wasn't possible with saving
@@ -87,18 +89,17 @@ def save_to_redis(images_files, images_urls):
 
     # save images
     for i, (image, t_shirt_image) in enumerate(images_files):
-        pipeline.set(f'image_{i}', image.getvalue())
-        pipeline.set(f't_shirt_image_{i}', t_shirt_image.getvalue())
+        pipeline.set(f'{prefix}_image_{i}', image.getvalue())
+        pipeline.set(f'{prefix}_t_shirt_image_{i}', t_shirt_image.getvalue())
         image.close()
         t_shirt_image.close()
 
     # save full size images(s3 urls)
-    redis_conn.set('images_urls', json.dumps(images_urls))
-
+    pipeline.set(f'{prefix}_images_urls', json.dumps(images_urls))
     pipeline.execute()
 
 
-def download_next_images():
+def download_next_images(prefix):
     """
     Shuffle s3 images index and iterating in it.
     Download batch_size images from s3 and save in with names from 0 to 9.png.
@@ -122,24 +123,33 @@ def download_next_images():
 
     images_urls = make_urls(server_indexes)
     s = time.time()
-    save_to_redis(downloaded_images_files, images_urls)
-    print(f'Transaction time: {time.time() - s:.3f}s')
+    save_to_redis(downloaded_images_files, images_urls, prefix)
+    # TODO: logging
+    print(f'Transaction time: {time.time() - s:.3f}s', flush=True)
 
 
 def update_images():
     last_update = 0
     st_atime = 0
+    prefix_alternates = ['a', 'b']
+    step = 0
 
     while True:
         cur_time = time.time()
         if cur_time - last_update > update_delta and\
            cur_time - st_atime < update_delta * 2:
             last_update = time.time()
-            download_next_images()
-            print(f'Downloading: {time.time() - last_update:.3f}s')
+            prefix = prefix_alternates[step % 2]
+
+            download_next_images(prefix)
+            prefix_file.write_text(prefix)
+            step += 1
+            # TODO: logging
+            print(f'Step {step}, downloading: {time.time() - last_update:.3f}s',
+                  flush=True)
         else:
             time.sleep(0.1)
-            st_atime = os.stat(sync_file).st_atime
+            st_atime = sync_file.stat().st_atime
 
 
 if __name__ == '__main__':
