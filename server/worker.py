@@ -74,7 +74,7 @@ def make_urls(indexes):
                                                 'Bucket': bucket,
                                                 'Key': f'images_with_logo/'
                                                        f'image_{i}.png'},
-                                            ExpiresIn=60 * expires_hours)
+                                            ExpiresIn=60 * 60 * expires_hours)
         urls.append(url)
     return urls
 
