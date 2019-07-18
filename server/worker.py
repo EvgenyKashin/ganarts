@@ -1,158 +1,167 @@
 import os
 import time
-from pathlib import Path
 import random
 from io import BytesIO
 import json
-import boto3
+from pathlib import Path
 from PIL import Image
+import boto3
 import redis
 
 
-images_path = 'small_images'
-t_shirt_path = 't_shirt'
-batch_size = 9
-current_image = 0
-max_images = 21979
-update_delta = 30
-bucket = 'ganarts'
-expires_hours = 24
-
-client_s3 = boto3.client(
-    's3',
-    aws_access_key_id=os.environ['AWSAccessKeyId'],
-    aws_secret_access_key=os.environ['AWSSecretKey'],
-    region_name='eu-central-1'
-)
-
-redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
-
-server_images_index = list(range(max_images))
-random.shuffle(server_images_index)
-background = Image.open('static/t_shirt.jpg', 'r')
-
-sync_file = Path('sync_file')
-sync_file.touch()
-prefix_file = Path('prefix_file')
-prefix_file.touch()
-
-def make_t_shirt(img):
-    bg_w, bg_h = background.size
-
-    # insert image in t-shirt
-    img = img.resize((bg_w // 10 * 4, bg_h // 10 * 4))
-    img_w, img_h = img.size
-
-    offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 10 * 6)
-    background.paste(img, offset)
-
-    return background
+IMAGES_PATH = 'small_images'
+T_SHIRT_PATH = 't_shirt'
+BATCH_SIZE = 9
+MAX_IMAGES = 21979
+UPDATE_DELTA = 30
+BUCKET = 'ganarts'
+EXPIRES_HOURS = 24
 
 
-def download_and_process_image(server_index):
-    response = client_s3.get_object(Bucket=bucket,
-                                    Key='{}/image_{}.png'.format(images_path,
-                                                                 server_index))
-    content = response['Body']
-    img = Image.open(content)
-    img_t_shirt = make_t_shirt(img)
+class Worker:
+    def __init__(self):
+        self.client_s3 = boto3.client(
+            's3',
+            aws_access_key_id=os.environ['AWSAccessKeyId'],
+            aws_secret_access_key=os.environ['AWSSecretKey'],
+            region_name='eu-central-1'
+        )
+        self.redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
 
-    output_img = BytesIO()
-    output_img_t_shirt = BytesIO()
-    img.save(output_img, format=img.format)
-    img_t_shirt.save(output_img_t_shirt, format=img_t_shirt.format)
+        self.server_images_index = list(range(MAX_IMAGES))
+        random.shuffle(self.server_images_index)
+        self.current_image = 0
+        self.background_img = Image.open('static/t_shirt.jpg', 'r')
 
-    return output_img, output_img_t_shirt
+        self.sync_file = Path('sync_file')
+        self.sync_file.touch()
+        self.prefix_file = Path('prefix_file')
+        self.prefix_file.touch()
 
+    def _make_t_shirt(self, img):
+        """Insert image to T-shirt background"""
+        t_shirt = self.background_img
+        bg_w, bg_h = t_shirt.size
 
-def make_urls(indexes):
-    urls = []
-    for i in indexes:
-        url = client_s3.generate_presigned_url(
-                                            'get_object',
-                                            Params={
-                                                'Bucket': bucket,
-                                                'Key': f'images_with_logo/'
-                                                       f'image_{i}.png'},
-                                            ExpiresIn=60 * 60 * expires_hours)
-        urls.append(url)
-    return urls
+        img = img.resize((bg_w // 10 * 4, bg_h // 10 * 4))
+        img_w, img_h = img.size
 
+        offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 10 * 6)
+        t_shirt.paste(img, offset)
 
-def save_to_redis(images_files, images_urls, prefix):
-    """
-    Not such beautiful, like inplace image saving, but it execute
-    all commands in one transaction. It wasn't possible with saving
-    files to filesystem(without redis).
-    """
-    pipeline = redis_conn.pipeline()
+        return t_shirt
 
-    # save images
-    for i, (image, t_shirt_image) in enumerate(images_files):
-        pipeline.set(f'{prefix}_image_{i}', image.getvalue())
-        pipeline.set(f'{prefix}_t_shirt_image_{i}', t_shirt_image.getvalue())
-        image.close()
-        t_shirt_image.close()
+    def _download_and_process_image(self, server_index):
+        """Download image from s3, make T-shirt and saving to Bytes"""
+        response = self.client_s3.get_object(Bucket=BUCKET,
+                                             Key='{}/image_{}.png'.format(
+                                                 IMAGES_PATH, server_index))
+        content = response['Body']
+        img = Image.open(content)
+        img_t_shirt = self._make_t_shirt(img)
 
-    # save full size images(s3 urls)
-    pipeline.set(f'{prefix}_images_urls', json.dumps(images_urls))
-    pipeline.execute()
+        output_img = BytesIO()
+        output_img_t_shirt = BytesIO()
+        img.save(output_img, format=img.format)
+        img_t_shirt.save(output_img_t_shirt, format=img_t_shirt.format)
 
+        return output_img, output_img_t_shirt
 
-def download_next_images(prefix):
-    """
-    Shuffle s3 images index and iterating in it.
-    Download batch_size images from s3 and save in with names from 0 to 9.png.
-    When s3 images end, shuffle and start iterating from the beginning.
-    Insert image in t-shirt.
-    """
-    global current_image
-    server_indexes = []
+    def _make_urls(self, indexes):
+        """Create public available s3 urls for images"""
+        urls = []
+        for i in indexes:
+            url = self.client_s3.\
+                generate_presigned_url('get_object',
+                                       Params={
+                                           'Bucket': BUCKET,
+                                           'Key': f'images_with_logo/'
+                                                  f'image_{i}.png'},
+                                       ExpiresIn=60 * 60 * EXPIRES_HOURS)
+            urls.append(url)
+        return urls
 
-    for i in range(batch_size):
-        server_indexes.append(server_images_index[current_image])
+    def _save_to_redis(self, images_files, images_urls, prefix):
+        """
+        Save images(bytes) and urls with current prefix to redis.
+        Not such beautiful, like inplace image saving, but it execute
+        all commands in one transaction. It wasn't possible with saving
+        files to filesystem(without redis).
+        """
+        pipeline = self.redis_conn.pipeline()
 
-        current_image += 1
-        if current_image >= max_images:
-            current_image = 0
-            random.shuffle(server_images_index)
+        # save images to redis in one transaction
+        for i, (image, t_shirt_image) in enumerate(images_files):
+            pipeline.set(f'{prefix}_image_{i}', image.getvalue())
+            pipeline.set(f'{prefix}_t_shirt_image_{i}', t_shirt_image.getvalue())
+            image.close()
+            t_shirt_image.close()
 
-    downloaded_images_files = []
-    for server_index in server_indexes:
-        downloaded_images_files.append(download_and_process_image(server_index))
+        # save full size images(s3 urls)
+        pipeline.set(f'{prefix}_images_urls', json.dumps(images_urls))
+        pipeline.execute()
 
-    images_urls = make_urls(server_indexes)
-    s = time.time()
-    save_to_redis(downloaded_images_files, images_urls, prefix)
-    # TODO: logging
-    print(f'Transaction time: {time.time() - s:.3f}s', flush=True)
+    def _download_next_images(self, prefix):
+        """
+        Shuffle s3 image indexes and iterating through it.
+        Download batch_size images from s3, make T-shirt, create s3 urls
+        and save it to redis. When s3 images end, shuffle and
+        start iterating from the beginning.
+        """
+        server_indexes = []
 
+        for i in range(BATCH_SIZE):
+            server_indexes.append(self.server_images_index[self.current_image])
 
-def update_images():
-    last_update = 0
-    st_atime = 0
-    prefix_alternates = ['a', 'b']
-    step = 0
+            self.current_image += 1
+            if self.current_image >= MAX_IMAGES:
+                self.current_image = 0
+                random.shuffle(self.server_images_index)
 
-    while True:
-        cur_time = time.time()
-        if cur_time - last_update > update_delta and\
-           cur_time - st_atime < update_delta * 2:
-            last_update = time.time()
-            prefix = prefix_alternates[step % 2]
+        downloaded_images_files = []
+        for server_index in server_indexes:
+            downloaded_images_files.append(
+                self._download_and_process_image(server_index))
 
-            download_next_images(prefix)
-            prefix_file.write_text(prefix)
-            step += 1
-            # TODO: logging
-            print(f'Step {step}, downloading: {time.time() - last_update:.3f}s',
-                  flush=True)
-        else:
-            time.sleep(0.1)
-            st_atime = sync_file.stat().st_atime
+        images_urls = self._make_urls(server_indexes)
+        s = time.time()
+        self._save_to_redis(downloaded_images_files, images_urls, prefix)
+        # TODO: logging
+        print(f'Transaction time: {time.time() - s:.3f}s', flush=True)
+
+    def run(self):
+        """
+        Infinite images and urls updating. There are to alternating group to
+        escape resources inconsistency. Stop updating then there are not
+        new requests to main server(sync_file).
+        """
+        last_update = 0
+        st_atime = 0
+        prefix_alternates = ['a', 'b']
+        step = 0
+
+        while True:
+            cur_time = time.time()
+            if cur_time - last_update > UPDATE_DELTA and\
+               cur_time - st_atime < UPDATE_DELTA * 2:
+                last_update = time.time()
+                prefix = prefix_alternates[step % 2]
+
+                self._download_next_images(prefix)
+                self.prefix_file.write_text(prefix)
+                step += 1
+                # TODO: logging
+                print(f'Step {step}, downloading:'
+                      f'{time.time() - last_update:.3f}s',
+                      flush=True)
+            else:
+                time.sleep(0.5)
+                st_atime = self.sync_file.stat().st_atime
 
 
 if __name__ == '__main__':
-    update_images()
+    worker = Worker()
+    worker.run()
+
 
 
