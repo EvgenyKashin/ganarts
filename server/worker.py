@@ -4,6 +4,7 @@ import random
 from io import BytesIO
 import json
 from pathlib import Path
+import logging
 from PIL import Image
 import boto3
 import redis
@@ -130,8 +131,7 @@ class Worker:
         images_urls = self._make_urls(server_indexes)
         s = time.time()
         self._save_to_redis(downloaded_images_files, images_urls, prefix)
-        # TODO: logging
-        print(f'Transaction time: {time.time() - s:.3f}s', flush=True)
+        logging.debug(f'Transaction time: {time.time() - s:.3f}s')
 
     def run(self):
         """
@@ -154,10 +154,8 @@ class Worker:
                 self._download_next_images(prefix)
                 self.prefix_file.write_text(prefix)
                 step += 1
-                # TODO: logging
-                print(f'Step {step}, downloading:'
-                      f'{time.time() - last_update:.3f}s',
-                      flush=True)
+                logging.info(f'Step {step}, downloading:'
+                             f'{time.time() - last_update:.3f}s')
             else:
                 time.sleep(0.5)
                 st_atime = self.sync_file.stat().st_atime
