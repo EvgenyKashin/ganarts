@@ -19,6 +19,10 @@ EXPIRES_HOURS = 24
 
 
 class Worker:
+    """
+    Worker class download new batch of images and urls each UPDATE_DELTA
+    and store it to redis.
+    """
     def __init__(self):
         self.client_s3 = boto3.client(
             's3',
