@@ -28,6 +28,7 @@ def index():
     prefix = prefix_file.read_text()
 
     urls = read_urls(prefix)
+    urls = ['ganarts.ru'] * len(urls) # temp hack
     return render_template('index.html',
                            urls=urls,
                            prefix=prefix)
