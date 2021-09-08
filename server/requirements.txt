@@ -2,4 +2,4 @@ flask==1.0.2
 boto3==1.9.180
 redis==3.2.1
 gunicorn==19.9.0
-Pillow==5.4.1
+Pillow==8.3.2
